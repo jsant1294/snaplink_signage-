@@ -12,12 +12,15 @@ export function Display({ business, qrDataUrl }: { business: Business; qrDataUrl
   const [idx, setIdx] = useState(0);
   const [now, setNow] = useState<string>("");
 
+  const hasSlides = business.slides.length > 0;
+
   // Slide loop
   useEffect(() => {
+    if (!hasSlides) return;
     const ms = Math.max(3, business.slideSeconds) * 1000;
     const t = setInterval(() => setIdx((i) => (i + 1) % business.slides.length), ms);
     return () => clearInterval(t);
-  }, [business.slides.length, business.slideSeconds]);
+  }, [hasSlides, business.slides.length, business.slideSeconds]);
 
   // Live clock
   useEffect(() => {
@@ -27,6 +30,21 @@ export function Display({ business, qrDataUrl }: { business: Business; qrDataUrl
     const t = setInterval(tick, 1000 * 20);
     return () => clearInterval(t);
   }, [business.showClock]);
+
+  if (!hasSlides) {
+    return (
+      <div
+        className="relative flex h-screen w-screen flex-col items-center justify-center overflow-hidden"
+        style={{ backgroundColor: business.bgColor, color: business.textColor }}
+      >
+        <div className="font-serif text-5xl font-bold" style={{ color: business.primaryColor }}>
+          {business.name}
+        </div>
+        {business.tagline && <div className="mt-3 text-2xl opacity-80">{business.tagline}</div>}
+        <div className="mt-8 text-xl opacity-50">No slides configured</div>
+      </div>
+    );
+  }
 
   const slide = business.slides[idx];
 
